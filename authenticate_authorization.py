@@ -4,13 +4,14 @@ from psycopg2.extras import RealDictCursor
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_cors import CORS
+
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this to a secure key
 
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 jwt = JWTManager(app)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ✅ PostgreSQL Connection
 def get_db_connection():
@@ -63,6 +64,15 @@ def register():
         return jsonify(result), 500
 
     return jsonify(result)
+@app.route('/users', methods=['GET'])
+def get_users():
+    result = execute_query("SELECT id, name, email, role FROM accounts", fetch=True)
+
+    if "error" in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -112,4 +122,4 @@ def get_greetings():
     return jsonify(f"Hi {user['email']}, welcome to the protected route!, Your role is {claims['role']}")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='10.226.235.239', port=5000,debug=True)//my system's ip address 
